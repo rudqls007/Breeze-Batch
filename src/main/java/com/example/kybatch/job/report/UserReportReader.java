@@ -30,7 +30,7 @@ public class UserReportReader {
                 /* JPA를 통해 DB 접근할 수 있게, EntityManagerFactory 주입 */
                 .entityManagerFactory(emf)
                 /* JPQL로 User 엔티티 전체를 조회 */
-                .queryString("SELECT u FROM USER u ORDER BY u.id ASC")
+                .queryString("SELECT u FROM User u ORDER BY u.id ASC")
                 /* Reader가 한 번에 DB에서 가져오는 “페이지 크기” */
                 .pageSize(10)
                 .build();
