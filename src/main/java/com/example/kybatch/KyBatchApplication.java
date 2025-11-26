@@ -11,19 +11,16 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
 
 @SpringBootApplication
-@EnableBatchProcessing
-
+//@EnableBatchProcessing
 public class KyBatchApplication {
     public static void main(String[] args) {
-        SpringApplication app = new SpringApplication(KyBatchApplication.class);
-        app.setWebApplicationType(WebApplicationType.NONE); // ***
-        app.run(args);
+        SpringApplication.run(KyBatchApplication.class, args);
     }
 
-    @Bean
+/*    @Bean
     public ApplicationRunner runner(JobLauncher jobLauncher, Job helloJob) {
         return args -> jobLauncher.run(helloJob, new JobParameters());
-    }
+    } */
 
 
 }

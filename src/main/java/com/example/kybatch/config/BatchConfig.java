@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Configuration;
  * ==========================================
  */
 @Configuration          // 이 클래스는 설정 클래스야(Bean 정의하는 곳)
-@EnableBatchProcessing  // Spring Batch 인프라 활성화
+//@EnableBatchProcessing
 public class BatchConfig {
     // STEP 2 이후에 필요하면 여기에 커스텀 설정을 추가할 예정.
 }
