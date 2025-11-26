@@ -38,4 +38,13 @@ public class User {
         this.email = email;
         this.status = status;
     }
+
+    public void updateStatus(String status) {
+        this.status = status;
+
+    }
+
+    public void updateName(String name){
+        this.name = name;
+    }
 }
