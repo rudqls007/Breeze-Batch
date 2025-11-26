@@ -23,12 +23,16 @@ public class UserReportWriter {
     public FlatFileItemWriter<User> writer() {
 
         FlatFileItemWriter<User> writer = new FlatFileItemWriter<>();
+        /* 파일 위치 */
         writer.setResource(new FileSystemResource("output/users-report.csv"));
-        writer.setAppendAllowed(false); // 기존 파일 덮어쓰기
+        /* Job 돌릴 때마다 기존 파일 지우고 새로 갱신 */
+        writer.setAppendAllowed(false);
 
+        /* DelimitedLineAggregator : 구분자 역할 "," */
         writer.setLineAggregator(new DelimitedLineAggregator<User>() {{
             setDelimiter(",");
 
+            /* FieldExtractor<User> : User 객체에서 어떤 순서로 뽑을지 정의 */
             setFieldExtractor((FieldExtractor<User>) user -> new Object[]{
                     user.getId(),
                     user.getName(),

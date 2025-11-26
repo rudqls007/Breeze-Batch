@@ -36,6 +36,8 @@ public class UserReportJobConfig {
     public Step userReportStep(JobRepository jobRepository,
                                PlatformTransactionManager txManager) {
         return new StepBuilder("userReportStep", jobRepository)
+                /* Processor가 없는 구조기 떄문에 입 * 출력 타입이 같음.
+                *  한 번에 10개씩 처리 -> 청크 작업 한 번이 하나의 트랜잭션으로 이루어짐.*/
                 .<User, User>chunk(10, txManager)
                 .reader(reader.reader())
                 .writer(writer.writer())

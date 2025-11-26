@@ -20,11 +20,18 @@ public class UserReportReader {
 
     private final EntityManagerFactory emf;
 
+    /**
+     * Spring Batch에서 제공하는 JPA용 Paging Reader 빌더
+     * 내부에서 JpaPagingItemReader<User>를 생성함.
+     * */
     public JpaPagingItemReader<User> reader() {
         return new JpaPagingItemReaderBuilder<User>()
                 .name("userReportReader")
+                /* JPA를 통해 DB 접근할 수 있게, EntityManagerFactory 주입 */
                 .entityManagerFactory(emf)
+                /* JPQL로 User 엔티티 전체를 조회 */
                 .queryString("SELECT u FROM USER u ORDER BY u.id ASC")
+                /* Reader가 한 번에 DB에서 가져오는 “페이지 크기” */
                 .pageSize(10)
                 .build();
     }
