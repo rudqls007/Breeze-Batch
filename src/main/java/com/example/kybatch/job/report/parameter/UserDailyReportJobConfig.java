@@ -105,6 +105,17 @@ public class UserDailyReportJobConfig {
      * [Writer] CSV 파일 출력
      * - 파일명에 reportDate를 반영
      *   예) output/user-report-2025-11-26.csv
+     *
+     *   - 지연 생성: @StepScope는 빈을 Step 실행 시점에 생성합니다.
+     *   그래서 jobParameters를 실제 실행 시 주입받을 수 있습니다.
+     *   @StepScope 없이 @Value로 jobParameters를 읽으면,
+     *   애플리케이션 컨텍스트 초기화 때 값을 찾으려다 실패하거나, null로 고정됩니다.
+     *
+     *   - SpEL 바인딩: @Value("#{jobParameters['reportDate']}")는 Spring EL로JobParameter 맵에서 reportDate 키를 꺼냅니다.
+     *   문자열 파라미터를 안전하게 읽는 표준 방식입니다.
+     *
+     * - 실행 시점 의존: 리포트 날짜는 실행마다 다르므로, 컴파일/컨텍스트 초기화 시점이 아니라 “실행” 시점에 주입되어야 합니다.
+     *   Step-scoped 빈만이 이 요구를 만족합니다.
      */
     @Bean
     @StepScope
