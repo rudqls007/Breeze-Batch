@@ -23,6 +23,8 @@ dependencies {
     // Spring Batch 5
     implementation 'org.springframework.boot:spring-boot-starter-batch'
 
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+
     // JPA
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
