@@ -34,6 +34,8 @@ public class UserActivity {
 
     /* 통계 그룹핑을 빠르게 하기 위한 필드 */
     private int weekOfYear;
+
+    @Column(name = "month_value")
     private int month;
 
 }
