@@ -13,8 +13,10 @@ import java.util.List;
 public interface UserActivityRepository extends JpaRepository<UserActivity, Long> {
 
         /**
-         * 하루 동안의 유저 활동(raw data)을 합산하여 DTO 형태로 반환하는 JPQL
-         * createdAt BETWEEN startOfDay AND endOfDay
+         * 하루 동안의 유저 활동(raw data)을 합산하여 DTO로 반환
+         * - targetDate : 집계 기준 날짜 (예: 2025-11-27)
+         * - startOfDay : 해당 날짜 00:00
+         * - endOfDay   : 다음 날짜 00:00 (미만)
          */
         @Query("""
         SELECT new com.example.kybatch.dto.DailyAggregationDTO(

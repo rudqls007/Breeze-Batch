@@ -1,22 +1,17 @@
 package com.example.kybatch.domain.stats;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
 
-
 /**
- * DailyStats
- * - 하루 단위로 사용자 활동을 집계한 테이블
- * - 이후 Weekly, Monthly 통계의 원본 데이터로 사용
+ * DailyStatus
+ * - 하루 단위 유저 활동 집계 결과
+ * - 이후 Weekly / Monthly 통계의 원본 데이터
  */
 @Entity
 @Getter
-@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 public class DailyStatus {
 
@@ -33,13 +28,15 @@ public class DailyStatus {
     private Long orderCount;
 
     @Builder
-    public void DailyStats(Long userId, LocalDate date, Long loginCount, Long viewCount, Long orderCount) {
+    public DailyStatus(Long userId,
+                       LocalDate date,
+                       Long loginCount,
+                       Long viewCount,
+                       Long orderCount) {
         this.userId = userId;
         this.date = date;
         this.loginCount = loginCount;
         this.viewCount = viewCount;
         this.orderCount = orderCount;
     }
-
-
 }
