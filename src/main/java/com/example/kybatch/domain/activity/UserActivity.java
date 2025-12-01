@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.temporal.WeekFields;
 
 @Entity
 @Table(name = "user_activity")
@@ -35,7 +36,21 @@ public class UserActivity {
     /* 통계 그룹핑을 빠르게 하기 위한 필드 */
     private int weekOfYear;
 
-    @Column(name = "month_value")
-    private int month;
+    private Integer month;
+
+
+    /*
+     * 엔티티가 DB에 저장되거나 조회될 때
+     * createdAt 기반으로 month/weekOfYear 자동 계산
+     */
+    @PrePersist
+    public void prePersist() {
+        if (this.createdAt != null) {
+            this.month = this.createdAt.getMonthValue();
+            this.weekOfYear = this.createdAt.get(WeekFields.ISO.weekOfWeekBasedYear());
+        }
+    }
+
+
 
 }

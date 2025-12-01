@@ -1,4 +1,4 @@
-package com.example.kybatch;
+package com.example.kybatch.Daily;
 
 import com.example.kybatch.domain.activity.UserActivity;
 import com.example.kybatch.domain.activity.UserActivityRepository;
@@ -20,6 +20,8 @@ class DailyAggregationTest {
 
     @Autowired
     EntityManager em;
+
+
 
     @Test
     void showTables() {

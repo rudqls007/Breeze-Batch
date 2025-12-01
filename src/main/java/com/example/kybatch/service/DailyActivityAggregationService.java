@@ -1,7 +1,10 @@
 package com.example.kybatch.service;
 
 import com.example.kybatch.domain.activity.UserActivityRepository;
+import com.example.kybatch.domain.stats.DailyStatus;
+import com.example.kybatch.domain.stats.DailyStatusRepository;
 import com.example.kybatch.dto.DailyAggregationDTO;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 
@@ -14,23 +17,30 @@ import java.util.List;
 public class DailyActivityAggregationService {
 
     private final UserActivityRepository userActivityRepository;
+    private final DailyStatusRepository dailyStatusRepository;
 
-
-    /**
-     * 1) targetDate를 기준으로 하루의 시작/끝 계산
-     * 2) JPA Repository 호출하여 집계된 데이터를 가져옴
-     */
+    @Transactional
     public List<DailyAggregationDTO> aggregateDaily(LocalDate targetDate){
 
-        /* 하루의 시작 00:00 */
         LocalDateTime startOfDay = targetDate.atStartOfDay();
-
-        /* 하루의 끝 다음날 00: 00 직전 */
         LocalDateTime endOfDay  = startOfDay.plusDays(1);
 
-        return userActivityRepository.aggregateDaily(
-                targetDate, startOfDay, endOfDay
-        );
+        List<DailyAggregationDTO> results =
+                userActivityRepository.aggregateDaily(targetDate, startOfDay, endOfDay);
 
+        for (DailyAggregationDTO dto : results) {
+            DailyStatus status = DailyStatus.builder()
+                    .userId(dto.getUserId())
+                    .date(dto.getDate())
+                    .loginCount(dto.getLoginCount())
+                    .viewCount(dto.getViewCount())
+                    .orderCount(dto.getOrderCount())
+                    .build();
+
+            dailyStatusRepository.save(status);
+        }
+
+        return results;   // ← ★ 추가 ★
     }
+
 }
