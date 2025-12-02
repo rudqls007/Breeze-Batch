@@ -1,9 +1,9 @@
-package com.example.kybatch.job.report;
+package com.example.kybatch.job.report.daily;
 
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter @Setter
-public class DailyReportWriter {
+public class DailyReportReader {
     private String date;
 }

@@ -1,8 +1,11 @@
 package com.example.kybatch.job.report;
 
 import com.example.kybatch.domain.stats.DailyStatus;
+import com.example.kybatch.domain.stats.WeeklyStatus;
 import com.example.kybatch.dto.report.DailyReportDTO;
+import com.example.kybatch.dto.report.WeeklyReportDTO;
 import com.example.kybatch.job.report.daily.DailyReportProcessor;
+import com.example.kybatch.job.report.weekly.WeeklyReportProcessor;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -27,78 +30,81 @@ import java.util.Map;
 
 @Configuration
 @RequiredArgsConstructor
-public class DailyReportJobConfig {
+public class WeeklyReportJobConfig {
 
     private final EntityManagerFactory emf;
     private final JobRepository jobRepository;
     private final PlatformTransactionManager tm;
 
-    /** Daily CSV Export Reader Bean */
+    /** Reader */
     @Bean
     @StepScope
-    public JpaPagingItemReader<DailyStatus> dailyReportReader(
-            @Value("#{jobParameters['date']}") String date
+    public JpaPagingItemReader<WeeklyStatus> weeklyReportReader(
+            @Value("#{jobParameters['week']}") Integer week
     ) {
+        JpaPagingItemReader<WeeklyStatus> reader = new JpaPagingItemReader<>();
 
-        JpaPagingItemReader<DailyStatus> reader = new JpaPagingItemReader<>();
-
-        reader.setName("dailyReportReader");
+        reader.setName("weeklyReportReader");
         reader.setEntityManagerFactory(emf);
-        reader.setQueryString("SELECT d FROM DailyStatus d WHERE d.date = :date");
+        reader.setQueryString("SELECT w FROM WeeklyStatus w WHERE w.weekOfYear = :week");
         reader.setPageSize(100);
 
         Map<String, Object> params = new HashMap<>();
-        params.put("date", LocalDate.parse(date));
+        params.put("week", week);
         reader.setParameterValues(params);
 
         return reader;
     }
 
-    /** Daily CSV Export Writer Bean */
+    /** Writer */
     @Bean
     @StepScope
-    public FlatFileItemWriter<DailyReportDTO> dailyReportWriter(
-            @Value("#{jobParameters['date']}") String date
+    public FlatFileItemWriter<WeeklyReportDTO> weeklyReportWriter(
+            @Value("#{jobParameters['week']}") Integer week
     ) {
+        FlatFileItemWriter<WeeklyReportDTO> writer = new FlatFileItemWriter<>();
 
-        FlatFileItemWriter<DailyReportDTO> writer = new FlatFileItemWriter<>();
+        writer.setName("weeklyReportWriter");
+        writer.setResource(new FileSystemResource("output/weekly-report-" + week + ".csv"));
 
-        writer.setName("dailyReportWriter");
-        writer.setResource(new FileSystemResource("output/daily-report-" + date + ".csv"));
+        BeanWrapperFieldExtractor<WeeklyReportDTO> extractor = new BeanWrapperFieldExtractor<>();
+        extractor.setNames(new String[]{
+                "userId", "startDate", "endDate",
+                "loginCount", "viewCount", "orderCount"
+        });
 
-        BeanWrapperFieldExtractor<DailyReportDTO> extractor = new BeanWrapperFieldExtractor<>();
-        extractor.setNames(new String[]{"userId", "date", "loginCount", "viewCount", "orderCount"});
-
-        DelimitedLineAggregator<DailyReportDTO> aggregator = new DelimitedLineAggregator<>();
+        DelimitedLineAggregator<WeeklyReportDTO> aggregator = new DelimitedLineAggregator<>();
         aggregator.setDelimiter(",");
         aggregator.setFieldExtractor(extractor);
 
         writer.setLineAggregator(aggregator);
-        writer.setHeaderCallback(w -> w.write("userId,date,loginCount,viewCount,orderCount"));
+        writer.setHeaderCallback(w ->
+                w.write("userId,startDate,endDate,loginCount,viewCount,orderCount")
+        );
 
         return writer;
     }
 
     /** Step */
     @Bean
-    public Step dailyReportStep(
-            JpaPagingItemReader<DailyStatus> dailyReportReader,
-            DailyReportProcessor processor,
-            FlatFileItemWriter<DailyReportDTO> dailyReportWriter
+    public Step weeklyReportStep(
+            JpaPagingItemReader<WeeklyStatus> weeklyReportReader,
+            WeeklyReportProcessor processor,
+            FlatFileItemWriter<WeeklyReportDTO> weeklyReportWriter
     ) {
-        return new StepBuilder("dailyReportStep", jobRepository)
-                .<DailyStatus, DailyReportDTO>chunk(100, tm)
-                .reader(dailyReportReader)
+        return new StepBuilder("weeklyReportStep", jobRepository)
+                .<WeeklyStatus, WeeklyReportDTO>chunk(100, tm)
+                .reader(weeklyReportReader)
                 .processor(processor)
-                .writer(dailyReportWriter)
+                .writer(weeklyReportWriter)
                 .build();
     }
 
     /** Job */
     @Bean
-    public Job dailyReportJob(Step dailyReportStep) {
-        return new JobBuilder("dailyReportJob", jobRepository)
-                .start(dailyReportStep)
+    public Job weeklyReportJob(Step weeklyReportStep) {
+        return new JobBuilder("weeklyReportJob", jobRepository)
+                .start(weeklyReportStep)
                 .build();
     }
 }

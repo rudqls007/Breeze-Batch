@@ -1,4 +1,4 @@
-package com.example.kybatch.job.report;
+package com.example.kybatch.job.report.daily;
 
 import com.example.kybatch.domain.stats.DailyStatus;
 import com.example.kybatch.dto.report.DailyReportDTO;
