@@ -1,4 +1,4 @@
-package com.example.kybatch.job.report.parameter;
+package com.example.kybatch.job.report.user.parameter;
 
 import com.example.kybatch.domain.user.User;
 import jakarta.persistence.EntityManagerFactory;

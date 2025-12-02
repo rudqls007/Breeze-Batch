@@ -1,4 +1,4 @@
-package com.example.kybatch.job.report;
+package com.example.kybatch.job.report.user;
 
 import com.example.kybatch.domain.user.User;
 import lombok.RequiredArgsConstructor;
