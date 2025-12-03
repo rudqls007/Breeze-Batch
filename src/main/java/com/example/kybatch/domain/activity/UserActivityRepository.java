@@ -36,4 +36,11 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay")LocalDateTime endOfDay);
 
+
+    @Query("SELECT MIN(a.createdAt) FROM UserActivity a")
+    LocalDateTime findMinCreatedAt();
+
+    @Query("SELECT MAX(a.createdAt) FROM UserActivity a")
+    LocalDateTime findMaxCreatedAt();
+
 }
