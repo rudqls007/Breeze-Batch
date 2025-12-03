@@ -1,5 +1,6 @@
 package com.example.kybatch.domain.activity;
 
+import com.example.kybatch.domain.user.User;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -9,7 +10,8 @@ import java.time.temporal.WeekFields;
 @Entity
 @Table(name = "user_activity")
 @Getter @Setter @Builder
-@NoArgsConstructor @AllArgsConstructor
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 public class UserActivity {
 
 
@@ -23,7 +25,12 @@ public class UserActivity {
     private Long id;
 
     /* 어떤 사용자의 행동인지 체크 */
+    @Column(name = "user_seq")
     private Long userId;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id")
+    private User user;
 
     /* 개별 행동 카운트 (raw data) */
     private int loginCount;

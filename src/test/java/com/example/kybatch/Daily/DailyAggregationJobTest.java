@@ -30,18 +30,27 @@ public class DailyAggregationJobTest {
 
         LocalDate target = LocalDate.of(2025, 11, 27);
 
-        repo.save(new UserActivity(
-                null, 1L, 1, 2, 3,
-                target.atTime(10, 0),
-                48, 11
-        ));
+        // userId = 1, 로그인 1, 조회 2, 주문 3
+        repo.save(UserActivity.builder()
+                .userId(1L)
+                .loginCount(1)
+                .viewCount(2)
+                .orderCount(3)
+                .createdAt(target.atTime(10, 0))
+                .build()
+        );
 
-        repo.save(new UserActivity(
-                null, 1L, 2, 1, 1,
-                target.atTime(15, 0),
-                48, 11
-        ));
+        // userId = 1, 로그인 2, 조회 1, 주문 1
+        repo.save(UserActivity.builder()
+                .userId(1L)
+                .loginCount(2)
+                .viewCount(1)
+                .orderCount(1)
+                .createdAt(target.atTime(15, 0))
+                .build()
+        );
 
+        // when
         List<DailyAggregationDTO> dto =
                 repo.aggregateDaily(
                         target,
