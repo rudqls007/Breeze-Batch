@@ -1,4 +1,4 @@
-package com.example.kybatch.job.activity;
+package com.example.kybatch.job.dummy;
 
 import com.example.kybatch.domain.activity.UserActivity;
 import com.example.kybatch.domain.activity.UserActivityRepository;
