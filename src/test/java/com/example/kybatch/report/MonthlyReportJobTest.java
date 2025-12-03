@@ -46,6 +46,13 @@ class MonthlyReportJobTest {
                 .addLong("month", 11L)
                 .toJobParameters();
 
+        /**
+         * monthlyReportJob 시작
+         * monthlyReportStep 실행
+         * monthlyReportReader가 year/month 파라미터로 MonthlyStatus 조회
+         * MonthlyReportProcessor가 엔티티 → DTO 변환
+         * monthlyReportWriter가 output/monthly-report-2025-11.csv 파일로 CSV 작성
+         * */
         launcher.run(monthlyReportJob, params);
 
         /* THEN */
