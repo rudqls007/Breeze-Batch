@@ -42,7 +42,7 @@ import java.time.LocalDate;
  *   2) 어제 날짜의 이벤트 로그를 읽어서
  *   3) DailyStatus 테이블에 저장
  */
-@Configuration
+//@Configuration
 @RequiredArgsConstructor
 public class DailyAggregationStepConfig {
 
