@@ -1,22 +1,18 @@
-package com.example.kybatch.Daily;
+package com.example.kybatch.daily;
 
 import com.example.kybatch.domain.activity.UserActivity;
 import com.example.kybatch.domain.activity.UserActivityRepository;
 import com.example.kybatch.domain.stats.DailyStatus;
 import com.example.kybatch.domain.stats.DailyStatusRepository;
 import com.example.kybatch.service.DailyActivityAggregationService;
-import jakarta.transaction.Transactional;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.ActiveProfiles;
-import org.springframework.test.context.TestPropertySource;
 
 import java.time.LocalDate;
-import java.time.temporal.WeekFields;
 import java.util.List;
-import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

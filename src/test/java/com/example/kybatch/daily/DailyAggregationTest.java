@@ -1,4 +1,4 @@
-package com.example.kybatch.Daily;
+package com.example.kybatch.daily;
 
 import com.example.kybatch.domain.activity.UserActivity;
 import com.example.kybatch.domain.activity.UserActivityRepository;

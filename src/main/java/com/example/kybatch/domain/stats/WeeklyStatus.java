@@ -30,4 +30,6 @@ public class WeeklyStatus {
 
     private LocalDate startDate;
     private LocalDate endDate;
+
+
 }

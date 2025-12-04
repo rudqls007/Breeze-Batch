@@ -29,4 +29,7 @@ public interface WeeklyStatusRepository extends JpaRepository<WeeklyStatus, Long
             @Param("start") LocalDate startOfWeek,
             @Param("end") LocalDate endOfWeek
             );
+
+    void deleteByYearAndWeekOfYear(int year, int weekOfYear);
+
 }
