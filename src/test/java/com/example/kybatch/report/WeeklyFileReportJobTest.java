@@ -34,8 +34,8 @@ class WeeklyFileReportJobTest {
     void generateWeeklyFileReport() throws Exception {
 
         // GIVEN
-        weeklyRepo.save(new WeeklyStatus(null, 1L, 2025, 3, 10, 30, 5, null, null));
-        weeklyRepo.save(new WeeklyStatus(null, 2L, 2025, 3, 3, 12, 1, null, null));
+        weeklyRepo.save(new WeeklyStatus(null, 1L, 2025, 3, 10, 30, 5, null, null, null));
+        weeklyRepo.save(new WeeklyStatus(null, 2L, 2025, 3, 3, 12, 1, null, null, null));
 
         JobParameters params = new JobParametersBuilder()
                 .addString("outputPath", "C:/batch-output")

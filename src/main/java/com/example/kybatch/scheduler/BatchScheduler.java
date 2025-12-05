@@ -6,6 +6,7 @@ import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.stereotype.Component;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -16,6 +17,11 @@ import java.time.LocalDate;
 @Component
 @EnableScheduling
 @RequiredArgsConstructor
+@ConditionalOnProperty(
+        name = "cron.enabled",   // 이 프로퍼티가
+        havingValue = "true",    // true일 때만 Bean 등록 & 스케줄링 동작
+        matchIfMissing = true    // (없으면 기본값 true로 보고 켜짐 - 운영에 유리)
+)
 public class BatchScheduler {
 
     private final JobLauncher jobLauncher;
@@ -27,7 +33,7 @@ public class BatchScheduler {
     private final Job monthlyAggregationJob;
 
     // 1) 매일 00:00 → UserActivity 생성
-    @Scheduled(cron = "0 32 17 * * *")
+    @Scheduled(cron = "0 5 0 * * *")
     public void runMassiveDaily() {
         LocalDate today = LocalDate.now();
         runJob(massiveUserActivityJob,
@@ -41,7 +47,7 @@ public class BatchScheduler {
     }
 
     // 2) 매일 00:10 → Daily 집계
-    @Scheduled(cron = "0 43 17 * * *")
+    @Scheduled(cron = "0 30 0 * * *")
     public void runDailyAggregation() {
         LocalDate yesterday = LocalDate.now().minusDays(1);
         runJob(dailyAggregationJob,
@@ -56,8 +62,8 @@ public class BatchScheduler {
         log.info("[CRON] DailyAggregationJob 실행 완료 - {}", yesterday);
     }
 
-    // 3) 매주 월요일 00:15 → Weekly 집계
-    @Scheduled(cron = "0 55 17 * * *")
+    // 3) 매주 월요일 00:50 → Weekly 집계
+    @Scheduled(cron = "0 50 0 * * MON")
     public void runWeeklyAggregation() {
         LocalDate lastWeek = LocalDate.now().minusWeeks(1);
 
@@ -75,8 +81,8 @@ public class BatchScheduler {
         log.info("[CRON] WeeklyAggregationJob 실행 완료 - {}-W{}", year, week);
     }
 
-    // 4) 매월 1일 00:20 → Monthly 집계
-    @Scheduled(cron = "0 20 18 * * *")
+    // 4) 매월 1일 01:00 → Monthly 집계
+    @Scheduled(cron = "0 0 1 1 * *")
     public void runMonthlyAggregation() {
         LocalDate lastMonth = LocalDate.now().minusMonths(1);
 

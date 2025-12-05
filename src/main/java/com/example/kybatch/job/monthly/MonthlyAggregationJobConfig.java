@@ -5,6 +5,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.*;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.context.annotation.Bean;
@@ -29,12 +30,21 @@ public class MonthlyAggregationJobConfig {
     @Bean
     public Step monthlyAggregationStep() {
         return new StepBuilder("monthlyAggregationStep", jobRepository)
-                .tasklet((contribution, chunkContext) -> {
-                    int year = 2025;
-                    int month = 11;
-                    service.aggregateMonthly(year, month);
-                    return RepeatStatus.FINISHED;
-                }, transactionManager)
+                .tasklet(this::runAggregation, transactionManager)
                 .build();
+    }
+
+    private RepeatStatus runAggregation(StepContribution contribution, ChunkContext chunkContext) {
+
+        JobParameters params = chunkContext.getStepContext()
+                .getStepExecution()
+                .getJobParameters();
+
+        int year = params.getLong("year").intValue();
+        int month = params.getLong("month").intValue();
+
+        service.aggregateMonthly(year, month);
+
+        return RepeatStatus.FINISHED;
     }
 }
