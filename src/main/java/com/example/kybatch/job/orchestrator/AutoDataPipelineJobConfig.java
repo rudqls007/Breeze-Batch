@@ -1,5 +1,7 @@
 package com.example.kybatch.job.orchestrator;
 
+import com.example.kybatch.job.listener.JobExecutionLoggingListener;
+import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
@@ -39,6 +41,10 @@ public class AutoDataPipelineJobConfig {
     private final Job weeklyAggregationJob;    // 주간 통계 배치
     private final Job monthlyAggregationJob;   // 월간 통계 배치
 
+    // ⭐ 새로 추가되는 Listener들
+    private final JobExecutionLoggingListener jobLoggingListener;
+    private final StepExecutionLoggingListener stepLoggingListener;
+
     // ----------------------------------------------------
     // ⭐ 트랜잭션 끄기용 템플릿
     //    → TaskletStep 안은 트랜잭션이 걸려있으므로
@@ -59,6 +65,7 @@ public class AutoDataPipelineJobConfig {
     @Bean
     public Job fullAutoPipelineJob(Step fullAutoPipelineStep) {
         return new JobBuilder("fullAutoPipelineJob", jobRepository)
+                .listener(jobLoggingListener)      // ⭐ Job 단위 로그 리스너 연결
                 .start(fullAutoPipelineStep)
                 .build();
     }
@@ -72,6 +79,7 @@ public class AutoDataPipelineJobConfig {
     public Step fullAutoPipelineStep(TransactionTemplate nonTxTemplate) {
 
         return new StepBuilder("fullAutoPipelineStep", jobRepository)
+                .listener(stepLoggingListener)     // ⭐ Step 단위 로그 리스너 연결
                 .tasklet((contribution, chunkContext) -> {
 
                     // -----------------------------
