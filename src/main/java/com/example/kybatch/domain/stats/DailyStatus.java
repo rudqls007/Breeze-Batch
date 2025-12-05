@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 /**
  * DailyStatus
@@ -26,6 +27,9 @@ public class DailyStatus {
     private Long loginCount;
     private Long viewCount;
     private Long orderCount;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime createdAt;
 
     @Builder
     public DailyStatus(Long userId,

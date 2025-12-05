@@ -6,6 +6,8 @@ import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
@@ -26,6 +28,10 @@ public class MonthlyStatus {
     private Long loginCount;
     private Long viewCount;
     private Long orderCount;
+
+    @Column(name = "created_at", columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    private LocalDateTime createdAt;
+
 
     @Builder
     public MonthlyStatus(Long userId, int year, int month, Long loginCount, Long viewCount, Long orderCount) {
