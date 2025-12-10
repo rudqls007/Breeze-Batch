@@ -18,31 +18,36 @@ public class StepExecutionLoggingListener implements StepExecutionListener {
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
+
+        BatchStepLog logEntity = new BatchStepLog(stepExecution);
+
+        stepLogRepository.save(logEntity);
+
+        // afterStep에서 찾을 수 있도록 ID 저장
+        stepExecution.getExecutionContext().put("STEP_LOG_ID", logEntity.getId());
+
         log.info("[STEP-LOG] {}.{} START",
-                stepExecution.getJobExecution().getJobInstance().getJobName(),
-                stepExecution.getStepName());
-
-        BatchStepLog entity = new BatchStepLog(stepExecution);
-        stepLogRepository.save(entity);
-
-        // 나중에 afterStep에서 다시 꺼내 쓰기 위해 ID 저장
-        stepExecution.getExecutionContext().put("stepLogId", entity.getId());
+                logEntity.getJobName(),
+                logEntity.getStepName());
     }
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-        Long id = (Long) stepExecution.getExecutionContext().get("stepLogId");
+        System.out.println("### [DEBUG] afterJob 실행됨 — 실제로?");
+        Long id = (Long) stepExecution.getExecutionContext().get("STEP_LOG_ID");
+
         if (id != null) {
-            stepLogRepository.findById(id).ifPresent(entity -> {
-                entity.updateAfter(stepExecution);
-                stepLogRepository.save(entity);
-            });
+            stepLogRepository.findById(id)
+                    .ifPresent(entity -> {
+                        entity.updateAfter(stepExecution);
+                        stepLogRepository.save(entity);
+                    });
         }
 
-        log.info("[STEP-LOG] {}.{} END, status={}, read={}, write={}, skip={}",
+        log.info("[STEP-LOG] {}.{} END → status={}, read={}, write={}, skip={}",
                 stepExecution.getJobExecution().getJobInstance().getJobName(),
                 stepExecution.getStepName(),
-                stepExecution.getStatus(),
+                stepExecution.getExitStatus().getExitCode(),
                 stepExecution.getReadCount(),
                 stepExecution.getWriteCount(),
                 stepExecution.getSkipCount());

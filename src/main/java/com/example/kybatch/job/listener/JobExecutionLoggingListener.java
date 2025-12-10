@@ -15,32 +15,35 @@ public class JobExecutionLoggingListener implements JobExecutionListener {
 
     private final BatchJobLogRepository jobLogRepository;
 
-    // 같은 JobExecution에 대해 before/after에서 같이 쓸 로그 엔티티 보관
     private final ThreadLocal<BatchJobLog> currentLog = new ThreadLocal<>();
 
     @Override
     public void beforeJob(JobExecution jobExecution) {
-        log.info("[JOB-LOG] {} START, params={}",
-                jobExecution.getJobInstance().getJobName(),
-                jobExecution.getJobParameters());
 
         BatchJobLog logEntity = new BatchJobLog(jobExecution);
+
         jobLogRepository.save(logEntity);
         currentLog.set(logEntity);
+
+        log.info("[JOB-LOG] {} START (params={})",
+                logEntity.getJobName(),
+                logEntity.getParameters());
     }
 
     @Override
     public void afterJob(JobExecution jobExecution) {
+        System.out.println("### [DEBUG] afterJob 실행됨 — 실제로?");
         BatchJobLog logEntity = currentLog.get();
+
         if (logEntity != null) {
             logEntity.updateAfter(jobExecution);
             jobLogRepository.save(logEntity);
             currentLog.remove();
         }
 
-        log.info("[JOB-LOG] {} END, status={}, exit={}",
+        log.info("[JOB-LOG] {} END → status={}, exit={}",
                 jobExecution.getJobInstance().getJobName(),
-                jobExecution.getStatus(),
-                jobExecution.getExitStatus());
+                jobExecution.getExitStatus().getExitCode(),
+                jobExecution.getExitStatus().getExitDescription());
     }
 }
