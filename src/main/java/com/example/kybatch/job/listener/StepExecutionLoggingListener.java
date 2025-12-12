@@ -1,5 +1,6 @@
 package com.example.kybatch.job.listener;
 
+import com.example.kybatch.api.batchlog.service.BatchLogQueryService;
 import com.example.kybatch.domain.batchlog.BatchStepLog;
 import com.example.kybatch.domain.batchlog.BatchStepLogRepository;
 import lombok.RequiredArgsConstructor;
@@ -15,34 +16,23 @@ import org.springframework.stereotype.Component;
 public class StepExecutionLoggingListener implements StepExecutionListener {
 
     private final BatchStepLogRepository stepLogRepository;
+    private final BatchLogQueryService logQueryService;
 
     @Override
     public void beforeStep(StepExecution stepExecution) {
-
-        BatchStepLog logEntity = new BatchStepLog(stepExecution);
-
-        stepLogRepository.save(logEntity);
-
-        // afterStep에서 찾을 수 있도록 ID 저장
-        stepExecution.getExecutionContext().put("STEP_LOG_ID", logEntity.getId());
-
+        // ✅ 이제는 DB에 아무것도 저장하지 말고, 그냥 로그만 남기자
         log.info("[STEP-LOG] {}.{} START",
-                logEntity.getJobName(),
-                logEntity.getStepName());
+                stepExecution.getJobExecution().getJobInstance().getJobName(),
+                stepExecution.getStepName());
     }
 
     @Override
     public ExitStatus afterStep(StepExecution stepExecution) {
-        System.out.println("### [DEBUG] afterJob 실행됨 — 실제로?");
-        Long id = (Long) stepExecution.getExecutionContext().get("STEP_LOG_ID");
+        // ✅ 여기서 한 번에 엔티티 생성 + 완료 정보까지 채워서 저장
+        BatchStepLog logEntity = new BatchStepLog(stepExecution);
+        logEntity.updateAfter(stepExecution);
 
-        if (id != null) {
-            stepLogRepository.findById(id)
-                    .ifPresent(entity -> {
-                        entity.updateAfter(stepExecution);
-                        stepLogRepository.save(entity);
-                    });
-        }
+        logQueryService.saveStep(logEntity);
 
         log.info("[STEP-LOG] {}.{} END → status={}, read={}, write={}, skip={}",
                 stepExecution.getJobExecution().getJobInstance().getJobName(),

@@ -3,9 +3,12 @@ package com.example.kybatch.api.batchlog.service;
 import com.example.kybatch.api.batchlog.dto.JobLogResponseDTO;
 import com.example.kybatch.api.batchlog.dto.StepLogResponseDTO;
 import com.example.kybatch.domain.batchlog.BatchJobLogRepository;
+import com.example.kybatch.domain.batchlog.BatchStepLog;
 import com.example.kybatch.domain.batchlog.BatchStepLogRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -47,5 +50,11 @@ public class BatchLogQueryService {
                         .exitMessage(s.getExitMessage())
                         .build())
                 .toList();
+    }
+
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void saveStep(BatchStepLog log){
+        stepRepo.save(log);
     }
 }

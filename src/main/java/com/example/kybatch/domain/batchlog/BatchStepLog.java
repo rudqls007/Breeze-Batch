@@ -32,8 +32,8 @@ public class BatchStepLog {
     private long writeCount;
     private long skipCount;
 
-    @Column(columnDefinition = "TEXT")
-    private String exitMessage;
+/*    @Column(columnDefinition = "TEXT")
+    private String exitMessage; */
 
     @Column(columnDefinition = "TEXT")
     private String errorMessage;
@@ -51,27 +51,51 @@ public class BatchStepLog {
 
     /** Step 종료 후 업데이트 */
     public void updateAfter(StepExecution se) {
-        this.endTime = se.getEndTime();
-        this.status = se.getExitStatus().getExitCode();   // COMPLETED/FAILED/UNKNOWN
+
+        this.endTime = LocalDateTime.now();   // 중요!
+        this.status = se.getExitStatus().getExitCode();
 
         this.readCount = se.getReadCount();
         this.writeCount = se.getWriteCount();
         this.skipCount = se.getSkipCount();
 
-        this.exitMessage = se.getExitStatus() != null
-                ? se.getExitStatus().getExitDescription()
-                : null;
+        // -------------------------------
+        // 실패한 Step 처리
+        // -------------------------------
+        if (se.getStatus().isUnsuccessful()) {
 
-        if (!se.getFailureExceptions().isEmpty()) {
-            Throwable ex = se.getFailureExceptions().get(0);
-            this.errorMessage = ex.getMessage();
-            this.errorStack = getStackTrace(ex);
+
+            if (!se.getFailureExceptions().isEmpty()) {
+                Throwable ex = se.getFailureExceptions().get(0);
+                this.errorMessage = ex.getMessage();
+                this.errorStack = getStackTrace(ex);
+            } else {
+                String desc = se.getExitStatus().getExitDescription();
+                this.errorMessage = firstLine(desc);
+                this.errorStack = desc;
+            }
+        }
+        // -------------------------------
+        // 성공한 Step 처리
+        // -------------------------------
+        else {
+            this.errorMessage = null;
+            this.errorStack = null;
         }
     }
 
+    /** 문자열의 첫 줄 반환 */
+    private String firstLine(String text) {
+        if (text == null) return null;
+        return text.split("\n")[0];
+    }
+
+    /** Exception을 문자열 스택으로 변환 */
     private String getStackTrace(Throwable t) {
         StringWriter sw = new StringWriter();
-        t.printStackTrace(new PrintWriter(sw));
+        PrintWriter pw = new PrintWriter(sw);
+        t.printStackTrace(pw);
         return sw.toString();
     }
+
 }
