@@ -28,7 +28,6 @@ public class BatchLogQueryService {
                         .startTime(j.getStartTime())
                         .endTime(j.getEndTime())
                         .status(j.getStatus())
-                        .exitMessage(j.getExitMessage())
                         .parameters(j.getParameters())
                         .build())
                 .toList();
@@ -47,7 +46,6 @@ public class BatchLogQueryService {
                         .readCount(s.getReadCount())
                         .writeCount(s.getWriteCount())
                         .skipCount(s.getSkipCount())
-                        .exitMessage(s.getExitMessage())
                         .build())
                 .toList();
     }
