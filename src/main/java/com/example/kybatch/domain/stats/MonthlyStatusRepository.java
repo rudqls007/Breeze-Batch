@@ -29,4 +29,7 @@ public interface MonthlyStatusRepository extends JpaRepository<MonthlyStatus, Lo
             @Param("month") int month,
             @Param("startOfMonth") LocalDate startOfMonth,
             @Param("startOfNextMonth") LocalDate startOfNextMonth);
+
+    // ★ 여기 추가
+    void deleteByYearAndMonth(int year, int month);
 }
