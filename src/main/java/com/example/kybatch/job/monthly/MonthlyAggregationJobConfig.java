@@ -1,5 +1,7 @@
 package com.example.kybatch.job.monthly;
 
+import com.example.kybatch.job.listener.JobExecutionLoggingListener;
+import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import com.example.kybatch.service.MonthlyAggregationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.*;
@@ -20,9 +22,14 @@ public class MonthlyAggregationJobConfig {
     private final PlatformTransactionManager transactionManager;
     private final MonthlyAggregationService service;
 
+    private final JobExecutionLoggingListener jobExecutionLoggingListener;
+    private final StepExecutionLoggingListener stepExecutionLoggingListener;
+
+
     @Bean
     public Job monthlyAggregationJob() {
         return new JobBuilder("monthlyAggregationJob", jobRepository)
+                .listener(jobExecutionLoggingListener)
                 .start(monthlyAggregationStep())
                 .build();
     }
@@ -31,6 +38,7 @@ public class MonthlyAggregationJobConfig {
     public Step monthlyAggregationStep() {
         return new StepBuilder("monthlyAggregationStep", jobRepository)
                 .tasklet(this::runAggregation, transactionManager)
+                .listener(stepExecutionLoggingListener)
                 .build();
     }
 

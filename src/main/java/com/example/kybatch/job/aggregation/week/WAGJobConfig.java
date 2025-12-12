@@ -3,6 +3,8 @@ package com.example.kybatch.job.aggregation.week;
 import com.example.kybatch.domain.stats.DailyStatus;
 import com.example.kybatch.domain.stats.WeeklyStatus;
 import com.example.kybatch.domain.stats.WeeklyStatusRepository;
+import com.example.kybatch.job.listener.JobExecutionLoggingListener;
+import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.Getter;
 import lombok.RequiredArgsConstructor;
@@ -41,12 +43,16 @@ public class WAGJobConfig {
     private final EntityManagerFactory emf;
     private final WeeklyStatusRepository weeklyRepo;
 
+    private final JobExecutionLoggingListener jobExecutionLoggingListener;
+    private final StepExecutionLoggingListener stepExecutionLoggingListener;
+
     // ============================================================
     // 1) Job
     // ============================================================
     @Bean
     public Job weeklyAggregationJob(Step weeklyAggregationStep) {
         return new JobBuilder("weeklyAggregationJob", jobRepository)
+                .listener(jobExecutionLoggingListener)
                 .start(weeklyAggregationStep)
                 .build();
     }
@@ -65,7 +71,7 @@ public class WAGJobConfig {
                 .reader(weeklyDailyReader)
                 .processor(weeklyProcessor)
                 .writer(weeklyWriter)
-                .listener((StepExecutionListener) weeklyWriter)
+                .listener(stepExecutionLoggingListener)   // ⭐ 변경된 부분
                 .build();
     }
 

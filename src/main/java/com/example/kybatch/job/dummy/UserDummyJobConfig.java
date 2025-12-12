@@ -2,6 +2,8 @@ package com.example.kybatch.job.dummy;
 
 import com.example.kybatch.domain.user.User;
 import com.example.kybatch.domain.user.UserRepository;
+import com.example.kybatch.job.listener.JobExecutionLoggingListener;
+import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -25,6 +27,9 @@ public class UserDummyJobConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager tm;
 
+    private final JobExecutionLoggingListener jobExecutionLoggingListener;
+    private final StepExecutionLoggingListener stepExecutionLoggingListener;
+
     /**
      * 🧩 User Dummy Data 생성 Job
      * - 단일 Step(generateUsersStep)을 실행함
@@ -33,6 +38,7 @@ public class UserDummyJobConfig {
     @Bean
     public Job userDummyJob(Step generateUsersStep) {
         return new JobBuilder("userDummyJob", jobRepository)
+                .listener(jobExecutionLoggingListener)
                 .start(generateUsersStep)
                 .build();
     }
@@ -99,6 +105,7 @@ public class UserDummyJobConfig {
                     return RepeatStatus.FINISHED;
 
                 }, tm)  // tasklet 트랜잭션 매니저 지정
+                .listener(stepExecutionLoggingListener)
                 .build();
     }
 }

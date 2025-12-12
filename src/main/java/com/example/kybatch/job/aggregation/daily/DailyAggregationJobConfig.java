@@ -2,6 +2,8 @@ package com.example.kybatch.job.aggregation.daily;
 
 import com.example.kybatch.domain.stats.DailyStatus;
 import com.example.kybatch.dto.DailyAggregationDTO;
+import com.example.kybatch.job.listener.JobExecutionLoggingListener;
+import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import jakarta.persistence.EntityManagerFactory;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
@@ -31,6 +33,10 @@ public class DailyAggregationJobConfig {
     private final EntityManagerFactory emf;
     private final JobRepository jobRepository;
     private final PlatformTransactionManager tm;
+
+    private final JobExecutionLoggingListener jobExecutionLoggingListener;
+    private final StepExecutionLoggingListener stepExecutionLoggingListener;
+
 
     /** ========================
      * Reader
@@ -111,6 +117,7 @@ public class DailyAggregationJobConfig {
                 .reader(dailyAggregationReader)
                 .processor(dailyAggregationProcessor)
                 .writer(dailyAggregationWriter)
+                .listener(stepExecutionLoggingListener)
                 .build();
     }
 
@@ -121,6 +128,7 @@ public class DailyAggregationJobConfig {
     public Job dailyAggregationJob(Step dailyAggregationStep) {
         // 단일 스텝으로 구성된 일별 집계 Job
         return new JobBuilder("dailyAggregationJob", jobRepository)
+                .listener(jobExecutionLoggingListener)
                 .start(dailyAggregationStep)
                 .build();
     }

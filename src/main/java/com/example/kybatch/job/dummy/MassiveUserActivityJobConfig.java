@@ -4,6 +4,8 @@ import com.example.kybatch.domain.activity.UserActivity;
 import com.example.kybatch.domain.activity.UserActivityRepository;
 import com.example.kybatch.domain.user.User;
 import com.example.kybatch.domain.user.UserRepository;
+import com.example.kybatch.job.listener.JobExecutionLoggingListener;
+import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -30,6 +32,10 @@ public class MassiveUserActivityJobConfig {
     private final JobRepository jobRepository;
     private final PlatformTransactionManager tm;
 
+    private final JobExecutionLoggingListener jobExecutionLoggingListener;
+    private final StepExecutionLoggingListener stepExecutionLoggingListener;
+
+
     /**
      * 🧩 대량 UserActivity Dummy 생성 Job
      * - 지난 30일 간
@@ -39,6 +45,7 @@ public class MassiveUserActivityJobConfig {
     @Bean
     public Job massiveUserActivityJob(Step massiveActivityStep) {
         return new JobBuilder("massiveUserActivityJob", jobRepository)
+                .listener(jobExecutionLoggingListener)
                 .start(massiveActivityStep)
                 .build();
     }
@@ -143,6 +150,7 @@ public class MassiveUserActivityJobConfig {
 
                     return RepeatStatus.FINISHED;
                 }, tm) // 트랜잭션 매니저 지정
+                .listener(stepExecutionLoggingListener)
                 .build();
     }
 }
