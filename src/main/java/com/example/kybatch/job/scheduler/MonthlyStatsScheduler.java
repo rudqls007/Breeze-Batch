@@ -19,19 +19,22 @@ public class MonthlyStatsScheduler {
     private final JobLauncher jobLauncher;
     private final Job monthlyStatsAggregationJob;
 
-    @Scheduled(cron = "0 0 4 1 * *")
-    public void runMonthlyStats() throws Exception{
-        LocalDate start = LocalDate.now().withDayOfMonth(1);
-        LocalDate end   = start.plusMonths(1);
+    // 매달 1일 새벽 00:10 실행
+    @Scheduled(cron = "0 10 0 1 * ?")
+    public void runMonthlyStats() throws Exception {
+
+        LocalDate today = LocalDate.now();
+        LocalDate startOfMonth = today.minusMonths(1).withDayOfMonth(1); // 이전달 1일
+        LocalDate startOfNextMonth = startOfMonth.plusMonths(1);        // 이번달 1일
 
         JobParameters params = new JobParametersBuilder()
-                .addString("startDate", start.toString())
-                .addString("endDate", end.toString())
-                .addLong("runId", System.currentTimeMillis())
+                .addString("startDate", startOfMonth.toString())
+                .addString("endDate", startOfNextMonth.toString())
+                .addLong("timestamp", System.currentTimeMillis())
                 .toJobParameters();
 
+        log.info("[Scheduler][Monthly] run {} ~ {}", startOfMonth, startOfNextMonth.minusDays(1));
 
-        log.info("[Scheduler] Run Monthly Stats: {} ~ {}", start, end.minusDays(1));
         jobLauncher.run(monthlyStatsAggregationJob, params);
     }
 }
