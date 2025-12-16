@@ -20,7 +20,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * - Tasklet 기반 Step 1개로 구성
  * - JobExecutionLoggingListener + StepExecutionLoggingListener 로 실행 로그 저장
  */
-@Profile("aggregation")
+@Profile("batch")
 @Configuration
 @RequiredArgsConstructor
 public class WeeklyStatsAggregationJobConfig {

@@ -96,10 +96,10 @@ public class MassiveUserActivityJobConfig {
                         for (User user : users) {
 
                             //
-                            // 3-2. 하루당 활동 개수 랜덤 생성 (50~200)
+                            // 3-2. 하루당 활동 개수 랜덤 생성 (50~200) 개수 조절
                             // ------------------------------------------------
                             //
-                            int perDay = random.nextInt(150) + 50; // 50~200건
+                            int perDay = random.nextInt(10) + 5; // 50~200건
 
 
                             //

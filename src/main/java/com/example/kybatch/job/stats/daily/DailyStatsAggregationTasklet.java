@@ -28,10 +28,11 @@ public class DailyStatsAggregationTasklet implements Tasklet {
     private final BatchLockService lockService;
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext context) {
+    public RepeatStatus execute(StepContribution contribution,
+                                ChunkContext context) {
 
         // ===============================
-        // 0) Daily 전용 Lock
+        // 0) Lock
         // ===============================
         boolean locked = lockService.acquireLock(
                 "DAILY_STATS",
@@ -47,22 +48,23 @@ public class DailyStatsAggregationTasklet implements Tasklet {
 
         try {
             // ===============================
-            // 1) 운영 기준 날짜 계산 (어제)
+            // 1) 날짜 계산 (전날 기준)
             // ===============================
             LocalDate targetDate = LocalDate.now().minusDays(1);
 
             LocalDateTime start = targetDate.atStartOfDay();
-            LocalDateTime end = start.plusDays(1);
+            LocalDateTime end   = targetDate.plusDays(1).atStartOfDay();
 
-            log.info("[DailyStats] Aggregating for date={}", targetDate);
+            log.info("[DailyStats] Aggregating date={} ({} ~ {})",
+                    targetDate, start, end.minusSeconds(1));
 
             // ===============================
-            // 2) 기존 데이터 삭제 (Idempotent)
+            // 2) 기존 Daily 삭제
             // ===============================
             dailyRepository.deleteByDate(targetDate);
 
             // ===============================
-            // 3) 집계 SQL 실행
+            // 3) 집계 SQL
             // ===============================
             List<DailyAggregationDTO> aggregates =
                     dailyRepository.aggregateDaily(start, end);
@@ -88,7 +90,7 @@ public class DailyStatsAggregationTasklet implements Tasklet {
 
         } finally {
             // ===============================
-            // 5) Lock 해제
+            // 5) Unlock
             // ===============================
             lockService.releaseLock("DAILY_STATS");
         }
