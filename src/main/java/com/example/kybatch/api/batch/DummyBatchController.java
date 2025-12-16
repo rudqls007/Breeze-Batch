@@ -5,9 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.JobParameters;
 import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.configuration.JobRegistry;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
 
 @Slf4j
 @RestController
@@ -15,7 +18,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class DummyBatchController {
 
     private final JobLauncher jobLauncher;
-    private final Job massiveUserActivityJob;
+    private final JobRegistry jobRegistry;
 
     /**
      * 🔥 대량 UserActivity Dummy 생성
@@ -27,15 +30,15 @@ public class DummyBatchController {
     @PostMapping("/batch/dummy/user-activity/run")
     public String runUserActivityDummy() throws Exception {
 
+        Job job = jobRegistry.getJob("massiveUserActivityJob");
+
         JobParameters params = new JobParametersBuilder()
-                // 매번 실행 가능하도록 유니크 파라미터
-                .addLong("runAt", System.currentTimeMillis())
+                .addLocalDateTime("runAt", LocalDateTime.now())
                 .toJobParameters();
 
-        jobLauncher.run(massiveUserActivityJob, params);
+        jobLauncher.run(job, params);
 
         log.info("[API] Massive UserActivity dummy batch triggered");
         return "UserActivity dummy batch started";
     }
 }
-
