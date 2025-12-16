@@ -35,17 +35,20 @@ public class WeeklyStatsAggregationTasklet implements Tasklet {
     @Override
     public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
 
-        var params = chunkContext.getStepContext().getJobParameters();
 
-        String startDateStr = (String) params.get("startDate");
-        String endDateStr   = (String) params.get("endDate");
+        LocalDate now = LocalDate.now();
 
-        LocalDate startDate = LocalDate.parse(startDateStr); // 포함
-        LocalDate endDate   = LocalDate.parse(endDateStr);   // 미포함 (다음 주 시작일)
+        // 지난 주 기준 (월~일)
+        LocalDate startDate = now.minusWeeks(1)
+                .with(java.time.DayOfWeek.MONDAY);
 
-        // ISO 주차 기준 연도/주차 계산
+        LocalDate endDate = startDate.plusWeeks(1);
+
+        // ISO 주차
         int isoYear = startDate.get(IsoFields.WEEK_BASED_YEAR);
         int weekOfYear = startDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
+
+
 
         log.info("[WeeklyStats] startDate={}, endDate={}, isoYear={}, week={}",
                 startDate, endDate, isoYear, weekOfYear);
