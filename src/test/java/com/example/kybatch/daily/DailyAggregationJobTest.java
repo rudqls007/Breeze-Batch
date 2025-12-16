@@ -53,7 +53,6 @@ public class DailyAggregationJobTest {
         // when
         List<DailyAggregationDTO> dto =
                 repo.aggregateDaily(
-                        target,
                         target.atStartOfDay(),
                         target.plusDays(1).atStartOfDay()
                 );

@@ -26,12 +26,12 @@ public class DailyActivityAggregationService {
         LocalDateTime endOfDay  = startOfDay.plusDays(1);
 
         List<DailyAggregationDTO> results =
-                userActivityRepository.aggregateDaily(targetDate, startOfDay, endOfDay);
+                userActivityRepository.aggregateDaily(startOfDay, endOfDay);
 
         for (DailyAggregationDTO dto : results) {
             DailyStatus status = DailyStatus.builder()
                     .userId(dto.getUserId())
-                    .date(dto.getDate())
+                    .date(targetDate)
                     .loginCount(dto.getLoginCount())
                     .viewCount(dto.getViewCount())
                     .orderCount(dto.getOrderCount())

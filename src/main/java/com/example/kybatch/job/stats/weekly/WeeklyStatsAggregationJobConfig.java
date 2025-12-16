@@ -10,6 +10,7 @@ import org.springframework.batch.core.repository.JobRepository;
 import org.springframework.batch.core.step.builder.StepBuilder;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
 /**
@@ -19,6 +20,7 @@ import org.springframework.transaction.PlatformTransactionManager;
  * - Tasklet 기반 Step 1개로 구성
  * - JobExecutionLoggingListener + StepExecutionLoggingListener 로 실행 로그 저장
  */
+@Profile("aggregation")
 @Configuration
 @RequiredArgsConstructor
 public class WeeklyStatsAggregationJobConfig {

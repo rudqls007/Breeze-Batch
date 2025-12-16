@@ -15,15 +15,12 @@ public class DailyAggregationDTO {
     /** 유저 ID */
     private Long userId;
 
-    /** 집계 날짜 */
-    private LocalDate date;
-
     /** 하루 동안 로그인 총합 */
-    private long loginCount;
+    private Long loginCount;
 
     /** 하루 동안 조회 총합 */
-    private long viewCount;
+    private Long viewCount;
 
     /** 하루 동안 주문 총합 */
-    private long orderCount;
+    private Long orderCount;
 }

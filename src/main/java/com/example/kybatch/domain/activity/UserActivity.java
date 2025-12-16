@@ -33,18 +33,18 @@ public class UserActivity {
     private User user;
 
     /* 개별 행동 카운트 (raw data) */
-    private int loginCount;
-    private int viewCount;
-    private int orderCount;
+    private long loginCount;
+    private long viewCount;
+    private long orderCount;
 
     /* 행동 발생 시각 (기간 필터링에 활용) */
     private LocalDateTime createdAt;
 
     /* 통계 그룹핑을 빠르게 하기 위한 필드 */
-    private int weekOfYear;
+    private long weekOfYear;
 
     @Column(name = "month_value")
-    private Integer month;
+    private long month;
 
 
     /*

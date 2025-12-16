@@ -21,7 +21,6 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
         @Query("""
         SELECT new com.example.kybatch.dto.DailyAggregationDTO(
             ua.userId,
-            :targetDate,
             SUM(ua.loginCount),
             SUM(ua.viewCount),
             SUM(ua.orderCount)
@@ -32,7 +31,6 @@ public interface UserActivityRepository extends JpaRepository<UserActivity, Long
         GROUP BY ua.userId
         """)
     List<DailyAggregationDTO> aggregateDaily(
-            @Param("targetDate") LocalDate targetDate,
             @Param("startOfDay") LocalDateTime startOfDay,
             @Param("endOfDay")LocalDateTime endOfDay);
 

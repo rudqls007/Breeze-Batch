@@ -128,7 +128,11 @@ public class DailyAggregationStepConfig {
      */
     @Bean
     public DailyAggregationProcessor dailyAggregationProcessor() {
-        return new DailyAggregationProcessor();
+        // 운영 기준: 어제 날짜 집계
+        LocalDate targetDate = LocalDate.now().minusDays(1);
+
+        return new DailyAggregationProcessor(targetDate);
+
     }
 
     /**

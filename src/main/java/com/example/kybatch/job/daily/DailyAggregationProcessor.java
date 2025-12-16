@@ -6,19 +6,21 @@ import org.springframework.batch.item.ItemProcessor;
 
 import java.time.LocalDate;
 
-/**
- * DailyAggregationProcessor
- * - DB 집계 결과(DTO)를 DailyStatus 엔티티로 변환하는 단계
- * - Processor는 "데이터 형태 변환"을 담당하는 Spring Batch 표준 구성 요소
- */
-public class DailyAggregationProcessor implements ItemProcessor<DailyAggregationDTO, DailyStatus> {
+public class DailyAggregationProcessor
+        implements ItemProcessor<DailyAggregationDTO, DailyStatus> {
 
+    private final LocalDate targetDate;
+
+    public DailyAggregationProcessor(LocalDate targetDate) {
+        this.targetDate = targetDate;
+    }
 
     @Override
-    public DailyStatus process(DailyAggregationDTO item)  {
+    public DailyStatus process(DailyAggregationDTO item) {
+
         return DailyStatus.builder()
                 .userId(item.getUserId())
-                .date(item.getDate())
+                .date(targetDate)               // ✅ 여기서 주입
                 .loginCount(item.getLoginCount())
                 .viewCount(item.getViewCount())
                 .orderCount(item.getOrderCount())

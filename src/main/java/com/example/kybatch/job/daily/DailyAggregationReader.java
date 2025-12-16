@@ -27,7 +27,7 @@ public class DailyAggregationReader implements ItemReader<DailyAggregationDTO> {
 
         /* 처음 생성자에서 한 번만 DB를 조회해서 List를 만듦 */
         List<DailyAggregationDTO> result =
-                repository.aggregateDaily(targetDate, startOfDay, endOfDay);
+                repository.aggregateDaily(startOfDay, endOfDay);
 
         this.iterator = result.iterator();
     }
