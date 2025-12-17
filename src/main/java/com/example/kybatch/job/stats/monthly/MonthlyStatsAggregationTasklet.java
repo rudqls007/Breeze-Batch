@@ -1,18 +1,16 @@
 package com.example.kybatch.job.stats.monthly;
 
+import com.example.kybatch.batch.exception.NonCriticalBatchException;
+import com.example.kybatch.domain.lock.BatchLockPolicy;
 import com.example.kybatch.domain.stats.MonthlyStatus;
 import com.example.kybatch.domain.stats.MonthlyStatusRepository;
 import com.example.kybatch.dto.MonthlyAggregationDTO;
+import com.example.kybatch.job.common.AbstractRetryableTasklet;
 import com.example.kybatch.lock.BatchLockService;
-import com.example.kybatch.domain.lock.BatchLockPolicy;
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
@@ -21,17 +19,16 @@ import java.util.List;
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class MonthlyStatsAggregationTasklet implements Tasklet {
+public class MonthlyStatsAggregationTasklet
+        extends AbstractRetryableTasklet {
 
     private final MonthlyStatusRepository monthlyRepository;
     private final BatchLockService lockService;
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext context) {
+    protected void doExecute(StepContribution contribution,
+                             ChunkContext context) {
 
-        // ===============================
-        // 0) 락 획득
-        // ===============================
         boolean locked = lockService.acquireLock(
                 "MONTHLY_STATS",
                 BatchLockPolicy.EXCLUSIVE,
@@ -40,64 +37,49 @@ public class MonthlyStatsAggregationTasklet implements Tasklet {
         );
 
         if (!locked) {
-            log.warn("[MonthlyStats] Lock not acquired. Skip.");
-            return RepeatStatus.FINISHED;
+            throw new NonCriticalBatchException("Monthly Lock 획득 실패");
         }
 
         try {
+            LocalDate targetMonth = LocalDate.now().minusMonths(1);
 
-            // ===============================
-            // 1) 날짜 자동 계산 — 운영 방식
-            // ===============================
-            LocalDate now = LocalDate.now();
+            int year = targetMonth.getYear();
+            int month = targetMonth.getMonthValue();
 
-            // 이번 달 기준, 지난 달
-            LocalDate start = now.minusMonths(1).withDayOfMonth(1);
-            LocalDate end = start.plusMonths(1);
-
-            int year = start.getYear();
-            int month = start.getMonthValue();
-
-            log.info("[MonthlyStats] Aggregating for {}-{} ({} ~ {})",
-                    year, month, start, end.minusDays(1));
-
-            // ===============================
-            // 2) 기존 월 데이터 삭제
-            // ===============================
+            // 1️⃣ 기존 월간 데이터 삭제 (idempotent 보장)
             monthlyRepository.deleteByYearAndMonth(year, month);
 
-            // ===============================
-            // 3) 집계 SQL 실행
-            // ===============================
+            // 2️⃣ 집계 기간 계산
+            LocalDate startDate = targetMonth.withDayOfMonth(1);
+            LocalDate startOfNextMonth = startDate.plusMonths(1);
+
             List<MonthlyAggregationDTO> aggregates =
                     monthlyRepository.aggregateMonthly(
-                            year, month, start, end
+                            year,
+                            month,
+                            startDate,
+                            startOfNextMonth
                     );
 
-            log.info("[MonthlyStats] Aggregated rows={}", aggregates.size());
-
-            // ===============================
-            // 4) 저장
-            // ===============================
-            for (MonthlyAggregationDTO dto : aggregates) {
-                MonthlyStatus status = MonthlyStatus.builder()
-                        .userId(dto.getUserId())
-                        .year(year)
-                        .month(month)
-                        .loginCount(dto.getLoginCount())
-                        .viewCount(dto.getViewCount())
-                        .orderCount(dto.getOrderCount())
-                        .build();
-
-                monthlyRepository.save(status);
+            if (aggregates.isEmpty()) {
+                throw new NonCriticalBatchException("Monthly 집계 결과 없음");
             }
 
-            return RepeatStatus.FINISHED;
+            // 3️⃣ 저장
+            for (MonthlyAggregationDTO dto : aggregates) {
+                monthlyRepository.save(
+                        MonthlyStatus.builder()
+                                .userId(dto.getUserId())
+                                .year(year)
+                                .month(month)
+                                .loginCount(dto.getLoginCount())
+                                .viewCount(dto.getViewCount())
+                                .orderCount(dto.getOrderCount())
+                                .build()
+                );
+            }
 
         } finally {
-            // ===============================
-            // 5) 락 해제
-            // ===============================
             lockService.releaseLock("MONTHLY_STATS");
         }
     }

@@ -2,6 +2,7 @@ package com.example.kybatch.domain.stats;
 
 import com.example.kybatch.dto.MonthlyAggregationDTO;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
@@ -32,4 +33,5 @@ public interface MonthlyStatusRepository extends JpaRepository<MonthlyStatus, Lo
 
     // ★ 여기 추가
     void deleteByYearAndMonth(int year, int month);
+
 }

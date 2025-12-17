@@ -1,84 +1,83 @@
 package com.example.kybatch.job.stats.weekly;
 
+import com.example.kybatch.batch.exception.NonCriticalBatchException;
+import com.example.kybatch.domain.lock.BatchLockPolicy;
 import com.example.kybatch.domain.stats.WeeklyStatus;
 import com.example.kybatch.domain.stats.WeeklyStatusRepository;
 import com.example.kybatch.dto.WeeklyAggregationDTO;
+import com.example.kybatch.job.common.AbstractRetryableTasklet;
+import com.example.kybatch.lock.BatchLockService;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.StepContribution;
 import org.springframework.batch.core.scope.context.ChunkContext;
-import org.springframework.batch.core.step.tasklet.Tasklet;
-import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.stereotype.Component;
 
 import java.time.LocalDate;
-import java.time.temporal.IsoFields;
+import java.time.temporal.WeekFields;
 import java.util.List;
 
-/**
- * WeeklyStatsAggregationTasklet
- * ------------------------------
- * - DailyStatus를 기반으로 주간 집계를 수행하는 Tasklet.
- * - 1) JobParameter(startDate, endDate) 조회
- * - 2) 해당 기간에 대한 주차(year, weekOfYear) 계산
- * - 3) 기존 주차 데이터 삭제
- * - 4) aggregateWeekly 쿼리로 유저별 합계 조회
- * - 5) weekly_status 테이블에 저장
- */
 @Slf4j
 @Component
 @RequiredArgsConstructor
-public class WeeklyStatsAggregationTasklet implements Tasklet {
+public class WeeklyStatsAggregationTasklet
+        extends AbstractRetryableTasklet {
 
-    private final WeeklyStatusRepository weeklyStatusRepository;
+    private final WeeklyStatusRepository weeklyRepository;
+    private final BatchLockService lockService;
 
     @Override
-    public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) {
+    protected void doExecute(StepContribution contribution,
+                             ChunkContext context) {
 
+        boolean locked = lockService.acquireLock(
+                "WEEKLY_STATS",
+                BatchLockPolicy.EXCLUSIVE,
+                "WEEKLY",
+                "주간 통계 중복 실행 방지"
+        );
 
-        LocalDate now = LocalDate.now();
-
-        // 지난 주 기준 (월~일)
-        LocalDate startDate = now.minusWeeks(1)
-                .with(java.time.DayOfWeek.MONDAY);
-
-        LocalDate endDate = startDate.plusWeeks(1);
-
-        // ISO 주차
-        int isoYear = startDate.get(IsoFields.WEEK_BASED_YEAR);
-        int weekOfYear = startDate.get(IsoFields.WEEK_OF_WEEK_BASED_YEAR);
-
-
-
-        log.info("[WeeklyStats] startDate={}, endDate={}, isoYear={}, week={}",
-                startDate, endDate, isoYear, weekOfYear);
-
-        // 1) 기존 주차 데이터 삭제
-        weeklyStatusRepository.deleteByYearAndWeekOfYear(isoYear, weekOfYear);
-
-        // 2) 집계 쿼리 실행
-        List<WeeklyAggregationDTO> aggregates =
-                weeklyStatusRepository.aggregateWeekly(startDate, endDate);
-
-        log.info("[WeeklyStats] aggregate result size = {}", aggregates.size());
-
-        // 3) 결과를 WeeklyStatus 엔티티로 변환 후 저장
-        for (WeeklyAggregationDTO dto : aggregates) {
-
-            WeeklyStatus weeklyStatus = WeeklyStatus.builder()
-                    .userId(dto.getUserId())
-                    .year(isoYear)
-                    .weekOfYear(weekOfYear)
-                    .loginCount(dto.getLoginCount())
-                    .viewCount(dto.getViewCount())
-                    .orderCount(dto.getOrderCount())
-                    .startDate(startDate)
-                    .endDate(endDate.minusDays(1)) // end는 다음 주 시작일이므로 -1일
-                    .build();
-
-            weeklyStatusRepository.save(weeklyStatus);
+        if (!locked) {
+            throw new NonCriticalBatchException("Weekly Lock 획득 실패");
         }
 
-        return RepeatStatus.FINISHED;
+        try {
+            LocalDate targetDate = LocalDate.now().minusDays(1);
+            WeekFields wf = WeekFields.ISO;
+
+            int year = targetDate.getYear();
+            int weekOfYear = targetDate.get(wf.weekOfWeekBasedYear());
+
+            weeklyRepository.deleteByYearAndWeekOfYear(year, weekOfYear);
+
+            LocalDate startDate = targetDate
+                    .with(wf.weekOfWeekBasedYear(), weekOfYear)
+                    .with(wf.dayOfWeek(), 1);
+
+            LocalDate endDate = startDate.plusDays(7);
+
+            List<WeeklyAggregationDTO> aggregates =
+                    weeklyRepository.aggregateWeekly(startDate, endDate);
+
+            if (aggregates.isEmpty()) {
+                throw new NonCriticalBatchException("Weekly 집계 결과 없음");
+            }
+
+            for (WeeklyAggregationDTO dto : aggregates) {
+                weeklyRepository.save(
+                        WeeklyStatus.builder()
+                                .userId(dto.getUserId())
+                                .year(year)
+                                .weekOfYear(weekOfYear)
+                                .loginCount(dto.getLoginCount())
+                                .viewCount(dto.getViewCount())
+                                .orderCount(dto.getOrderCount())
+                                .build()
+                );
+            }
+
+        } finally {
+            lockService.releaseLock("WEEKLY_STATS");
+        }
     }
 }
