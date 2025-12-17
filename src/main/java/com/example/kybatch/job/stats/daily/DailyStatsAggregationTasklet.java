@@ -47,6 +47,16 @@ public class DailyStatsAggregationTasklet implements Tasklet {
         }
 
         try {
+
+//            // 🔥 실패 알림 테스트: 파라미터로 제어 (forceFail=Y일 때만 실패)
+//            String forceFail = (String) context.getStepContext()
+//                    .getJobParameters()
+//                    .get("forceFail");
+//
+//            if ("Y".equalsIgnoreCase(forceFail)) {
+//                throw new RuntimeException("🔥 DailyStatsAggregationJob 실패 알림 테스트");
+//            }
+
             // ===============================
             // 1) 날짜 계산 (전날 기준)
             // ===============================

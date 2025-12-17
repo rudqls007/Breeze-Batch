@@ -87,6 +87,7 @@ public class StatsBatchController {
 
         JobParameters params = new JobParametersBuilder()
                 .addLocalDateTime("runAt", LocalDateTime.now())
+ //               .addString("forceFail", "Y")
                 .toJobParameters();
 
         jobLauncher.run(job, params);

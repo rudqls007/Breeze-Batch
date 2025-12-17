@@ -35,7 +35,8 @@ dependencies {
     // Jackson
     implementation 'org.springframework.boot:spring-boot-starter-json'
 
-
+    // Mail Starter
+    implementation 'org.springframework.boot:spring-boot-starter-mail'
 
     // PostgreSQL
     runtimeOnly 'org.postgresql:postgresql'
