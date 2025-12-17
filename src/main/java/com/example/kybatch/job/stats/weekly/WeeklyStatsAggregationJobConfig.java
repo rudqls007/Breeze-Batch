@@ -2,6 +2,7 @@ package com.example.kybatch.job.stats.weekly;
 
 import com.example.kybatch.job.listener.JobExecutionLoggingListener;
 import com.example.kybatch.job.listener.StepExecutionLoggingListener;
+import com.example.kybatch.notification.listener.BatchFailureNotificationListener;
 import lombok.RequiredArgsConstructor;
 import org.springframework.batch.core.Job;
 import org.springframework.batch.core.Step;
@@ -13,13 +14,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Profile;
 import org.springframework.transaction.PlatformTransactionManager;
 
-/**
- * WeeklyStatsAggregationJobConfig
- * ------------------------------
- * - 주간 통계 집계 배치 Job 설정
- * - Tasklet 기반 Step 1개로 구성
- * - JobExecutionLoggingListener + StepExecutionLoggingListener 로 실행 로그 저장
- */
 @Profile("batch")
 @Configuration
 @RequiredArgsConstructor
@@ -29,13 +23,23 @@ public class WeeklyStatsAggregationJobConfig {
     private final PlatformTransactionManager transactionManager;
 
     private final WeeklyStatsAggregationTasklet weeklyStatsAggregationTasklet;
+
     private final JobExecutionLoggingListener jobExecutionLoggingListener;
+
+    // STEP 30 알림 Listener
+    private final BatchFailureNotificationListener failureNotificationListener;
+
     private final StepExecutionLoggingListener stepExecutionLoggingListener;
 
     @Bean
     public Job weeklyStatsAggregationJob() {
         return new JobBuilder("weeklyStatsAggregationJob", jobRepository)
+                // Job 실행 로그 저장
                 .listener(jobExecutionLoggingListener)
+
+                // Job 실패 시 알림 발송
+                .listener(failureNotificationListener)
+
                 .start(weeklyStatsAggregationStep())
                 .build();
     }
