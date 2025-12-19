@@ -45,7 +45,7 @@ public class BatchFailureNotificationListener implements JobExecutionListener {
     }
 
     /**
-     * ※ 여기 로직은 “최소 구현” 버전이야.
+     * ※ 여기 로직은 “최소 구현” 버전
      *   일단은 원인 메시지/예외로 failureType을 대략 분류하고,
      *   다음 STEP에서 정교화하면 된다.
      */
