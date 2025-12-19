@@ -35,13 +35,13 @@ public class JobExecutionLoggingListener implements JobExecutionListener {
         jobLogRepository.save(logEntity);
 
         // ❗ 실패 시 메일 알림
-        if (jobExecution.getStatus() == BatchStatus.FAILED) {
+/*        if (jobExecution.getStatus() == BatchStatus.FAILED) {
             notificationService.sendFailureMail(
                     jobExecution.getJobInstance().getJobName(),
                     jobExecution.getJobParameters().toString(),
                     jobExecution.getAllFailureExceptions().toString()
             );
-        }
+        }*/
 
         log.info("[JOB-LOG] {} END → status={}",
                 jobExecution.getJobInstance().getJobName(),

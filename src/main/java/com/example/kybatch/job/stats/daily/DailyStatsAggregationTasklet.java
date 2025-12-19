@@ -47,9 +47,9 @@ public class DailyStatsAggregationTasklet extends AbstractRetryableTasklet {
         }
 
         // STEP 31 실전 테스트용 (확인 후 반드시 제거)
-//        if (true) {
-//            throw new RuntimeException("STEP 31 실 배치 실패 알림 테스트");
-//        }
+        if (true) {
+            throw new RuntimeException("STEP 31 실 배치 실패 알림 테스트");
+        }
 
         try {
             // 집계 대상 날짜를 '어제'로 설정 (당일은 데이터가 아직 변동 중일 수 있음)
