@@ -1,5 +1,6 @@
 package com.example.kybatch.job.stats.weekly;
 
+import com.example.kybatch.job.listener.BatchAutoRestartJobListener; // ✅ STEP 34 추가
 import com.example.kybatch.job.listener.JobExecutionLoggingListener;
 import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import com.example.kybatch.notification.listener.BatchFailureNotificationListener;
@@ -31,6 +32,9 @@ public class WeeklyStatsAggregationJobConfig {
 
     private final StepExecutionLoggingListener stepExecutionLoggingListener;
 
+    // ✅ STEP 34 자동 재실행 리스너
+    private final BatchAutoRestartJobListener batchAutoRestartJobListener;
+
     @Bean
     public Job weeklyStatsAggregationJob() {
         return new JobBuilder("weeklyStatsAggregationJob", jobRepository)
@@ -39,6 +43,9 @@ public class WeeklyStatsAggregationJobConfig {
 
                 // Job 실패 시 알림 발송
                 .listener(failureNotificationListener)
+
+                // ✅ (STEP 34) 실패 시 AFTER_COMMIT + ASYNC로 1회 자동 재실행 요청
+                .listener(batchAutoRestartJobListener)
 
                 .start(weeklyStatsAggregationStep())
                 .build();
