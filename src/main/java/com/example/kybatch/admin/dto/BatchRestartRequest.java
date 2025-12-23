@@ -26,4 +26,12 @@ public class BatchRestartRequest {
      * - true : STOPPED / UNKNOWN 확장 대비
      */
     private boolean force;
+
+    // ✅ STEP 34 자동 재실행용 생성자 추가
+    public BatchRestartRequest(Long jobExecutionId, String reason, boolean force) {
+        this.jobExecutionId = jobExecutionId;
+        this.reason = reason;
+        this.force = force;
+    }
+
 }

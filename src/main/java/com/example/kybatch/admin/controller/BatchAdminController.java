@@ -23,14 +23,16 @@ public class BatchAdminController {
      */
     @PostMapping("/restart")
     public ResponseEntity<BatchRestartResponse> restart(
-            @RequestBody BatchRestartRequest request) {
+            @RequestBody BatchRestartRequest request
+    ) {
+        Long originJobExecutionId = request.getJobExecutionId(); // 🔧 변경
 
-        Long newJobExecutionId = batchRestartService.restart(request);
+        Long newJobExecutionId = batchRestartService.restart(originJobExecutionId); // 🔧 변경
 
         return ResponseEntity.ok(
                 new BatchRestartResponse(
-                        request.getJobExecutionId(),
-                        newJobExecutionId
+                        originJobExecutionId,   // 🔧 변경: 원본 실행 ID
+                        newJobExecutionId       // 🔧 변경: 새로 생성된 실행 ID
                 )
         );
     }

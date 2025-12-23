@@ -4,6 +4,7 @@ import com.example.kybatch.batch.failure.BatchFailureType;
 import com.example.kybatch.notification.NotificationDispatcher;
 import com.example.kybatch.notification.dto.NotificationMessage;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.batch.core.BatchStatus;
 import org.springframework.batch.core.JobExecution;
 import org.springframework.batch.core.JobExecutionListener;
@@ -14,6 +15,7 @@ import java.time.LocalDateTime;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j
 public class BatchFailureNotificationListener implements JobExecutionListener {
 
     private final NotificationDispatcher notificationDispatcher;
@@ -21,31 +23,28 @@ public class BatchFailureNotificationListener implements JobExecutionListener {
     @Override
     public void afterJob(JobExecution jobExecution) {
 
-        // 1) FAILED 아닌 경우는 알림 발송 대상 아님
+        // 1️⃣ FAILED 아니면 아무 것도 안 함
         if (jobExecution.getStatus() != BatchStatus.FAILED) {
             return;
         }
 
-        // 2) STEP 32 기준 NotificationMessage 생성
+        log.error("[STEP 34] Job FAILED. jobExecutionId={}", jobExecution.getId());
+
+        // 2️⃣ 실패 알림 전송
         NotificationMessage message = NotificationMessage.builder()
                 .jobName(jobExecution.getJobInstance().getJobName())
-                .jobExecutionId(jobExecution.getId())                 // 🔥 STEP 32
-                .stepName(resolveFailedStep(jobExecution))            // 🔥 STEP 32
+                .jobExecutionId(jobExecution.getId())
+                .stepName(resolveFailedStep(jobExecution))
                 .parameters(jobExecution.getJobParameters().toString())
                 .errorMessage(resolveErrorMessage(jobExecution))
                 .failureType(resolveFailureType(jobExecution))
-                .actionGuide(resolveActionGuide())                    // 🔥 STEP 32
+                .actionGuide(resolveActionGuide())
                 .occurredAt(LocalDateTime.now())
                 .build();
 
-        // 3) 기존 Dispatcher로 위임 (Mail / Slack / Kakao)
         notificationDispatcher.dispatch(message);
     }
 
-    /**
-     * 실패한 Step 이름 추출
-     * - 운영자가 "어디서 죽었는지" 바로 알기 위함
-     */
     private String resolveFailedStep(JobExecution jobExecution) {
         return jobExecution.getStepExecutions().stream()
                 .filter(step -> step.getStatus() == BatchStatus.FAILED)
@@ -60,40 +59,32 @@ public class BatchFailureNotificationListener implements JobExecutionListener {
                 : jobExecution.getAllFailureExceptions().get(0).getMessage();
     }
 
-    /**
-     * ※ failureType은 참고 정보용
-     *   STEP 31 정책상 전송 분기에는 사용하지 않음
-     */
     private BatchFailureType resolveFailureType(JobExecution jobExecution) {
         if (jobExecution.getAllFailureExceptions().isEmpty()) {
             return BatchFailureType.FATAL;
         }
 
-        Throwable cause = jobExecution.getAllFailureExceptions().get(0);
-        String msg = (cause.getMessage() == null) ? "" : cause.getMessage().toLowerCase();
+        String msg = String.valueOf(
+                jobExecution.getAllFailureExceptions().get(0).getMessage()
+        ).toLowerCase();
 
-        if (msg.contains("timeout") || msg.contains("lock") || msg.contains("deadlock")) {
+        if (msg.contains("timeout") || msg.contains("lock")) {
             return BatchFailureType.RETRYABLE;
         }
 
-        if (msg.contains("parse") || msg.contains("validation") || msg.contains("constraint")) {
+        if (msg.contains("validation")) {
             return BatchFailureType.NON_CRITICAL;
         }
 
         return BatchFailureType.FATAL;
     }
 
-    /**
-     * STEP 32 핵심
-     * - 알림을 본 운영자가 "다음 행동"을 바로 알 수 있게 함
-     * - 자동 재실행은 STEP 33에서 처리
-     */
     private String resolveActionGuide() {
         return """
                🔁 조치 가이드
-               - 배치 재실행 가능 여부 확인
-               - 동일 파라미터 재실행 권장
-               - Admin API 또는 수동 실행
+               - 실패 원인 점검
+               - 자동 재실행 정책 확인
+               - 필요 시 Admin API 수동 재실행
                """;
     }
 }

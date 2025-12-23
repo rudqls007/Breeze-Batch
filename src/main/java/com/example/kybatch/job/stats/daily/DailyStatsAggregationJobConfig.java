@@ -1,5 +1,6 @@
 package com.example.kybatch.job.stats.daily;
 
+import com.example.kybatch.job.listener.BatchAutoRestartJobListener;
 import com.example.kybatch.job.listener.JobExecutionLoggingListener;
 import com.example.kybatch.job.listener.StepExecutionLoggingListener;
 import com.example.kybatch.notification.listener.BatchFailureNotificationListener;
@@ -30,6 +31,9 @@ public class DailyStatsAggregationJobConfig {
     // STEP 30: 실패 시 알림 발송 Listener 추가
     private final BatchFailureNotificationListener failureNotificationListener;
 
+    // STEP 34 : 실패 시 알림 발송 후 재실행 여부 판단 후 재실행
+    private final BatchAutoRestartJobListener batchAutoRestartJobListener;
+
     private final StepExecutionLoggingListener stepListener;
 
     @Bean
@@ -38,6 +42,8 @@ public class DailyStatsAggregationJobConfig {
 
                 // 1️⃣ Job 실행 결과를 DB에 기록
                 .listener(jobListener)
+
+                .listener(batchAutoRestartJobListener)
 
                 // 2️⃣ JobExecution이 FAILED면 Slack/Mail/Kakao 알림
                 //    - 성공 시엔 아무 것도 하지 않음

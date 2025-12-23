@@ -46,12 +46,15 @@ public class DailyStatsAggregationTasklet extends AbstractRetryableTasklet {
             throw new NonCriticalBatchException("Daily Lock 획득 실패");
         }
 
-        // STEP 31 실전 테스트용 (확인 후 반드시 제거)
-        if (true) {
-            throw new RuntimeException("STEP 31 실 배치 실패 알림 테스트");
-        }
+
 
         try {
+
+
+            // 🔥 STEP 34 테스트용 강제 실패
+            if (true) {
+                throw new RuntimeException("daily stats forced fail");
+            }
             // 집계 대상 날짜를 '어제'로 설정 (당일은 데이터가 아직 변동 중일 수 있음)
             LocalDate targetDate = LocalDate.now().minusDays(1);
 
