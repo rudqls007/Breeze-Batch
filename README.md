@@ -1,15 +1,15 @@
 # 🌊 Breeze-Batch
 
 <p align="center">
-  <img src="[https://capsule-render.vercel.app/api?type=waving&color=auto&height=220&section=header&text=Breeze-Batch&fontSize=80](https://capsule-render.vercel.app/api?type=waving&color=auto&height=220&section=header&text=Breeze-Batch&fontSize=80)" alt="Header" />
+  <img src="https://capsule-render.vercel.app/api?type=waving&color=auto&height=220&section=header&text=Breeze-Batch&fontSize=80" alt="Header" />
 </p>
 
 <p align="center">
-  <img src="[https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk](https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk)" alt="Java"/>
-  <img src="[https://img.shields.io/badge/Spring%20Boot-3.2.x-brightgreen?style=flat-square&logo=springboot](https://img.shields.io/badge/Spring%20Boot-3.2.x-brightgreen?style=flat-square&logo=springboot)" alt="SpringBoot"/>
-  <img src="[https://img.shields.io/badge/Spring%20Batch-5.1.x-blue?style=flat-square&logo=spring](https://img.shields.io/badge/Spring%20Batch-5.1.x-blue?style=flat-square&logo=spring)" alt="SpringBatch"/>
-  <img src="[https://img.shields.io/badge/PostgreSQL-15.x-blueviolet?style=flat-square&logo=postgresql](https://img.shields.io/badge/PostgreSQL-15.x-blueviolet?style=flat-square&logo=postgresql)" alt="PostgreSQL"/>
-  <img src="[https://img.shields.io/badge/Docker-Latest-blue?style=flat-square&logo=docker](https://img.shields.io/badge/Docker-Latest-blue?style=flat-square&logo=docker)" alt="Docker"/>
+  <img src="https://img.shields.io/badge/Java-17-orange?style=flat-square&logo=openjdk" alt="Java"/>
+  <img src="https://img.shields.io/badge/Spring_Boot-3.2.x-brightgreen?style=flat-square&logo=springboot" alt="SpringBoot"/>
+  <img src="https://img.shields.io/badge/Spring_Batch-5.1.x-blue?style=flat-square&logo=spring" alt="SpringBatch"/>
+  <img src="https://img.shields.io/badge/PostgreSQL-15.x-blueviolet?style=flat-square&logo=postgresql" alt="PostgreSQL"/>
+  <img src="https://img.shields.io/badge/Docker-Latest-blue?style=flat-square&logo=docker" alt="Docker"/>
 </p>
 
 > **Breeze-Batch is a production-oriented Spring Batch framework designed to explore real-world batch operations beyond simple Reader-Processor-Writer implementations.**
