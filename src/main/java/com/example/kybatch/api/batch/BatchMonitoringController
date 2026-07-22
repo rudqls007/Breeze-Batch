@@ -1,0 +1,44 @@
+package com.example.kybatch.api.batch;
+
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.batch.core.Job;
+import org.springframework.batch.core.JobParameters;
+import org.springframework.batch.core.JobParametersBuilder;
+import org.springframework.batch.core.configuration.JobRegistry;
+import org.springframework.batch.core.launch.JobLauncher;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import java.time.LocalDateTime;
+
+@Slf4j
+@RestController
+@RequiredArgsConstructor
+public class BatchMonitoringController {
+
+    private final JobLauncher jobLauncher;
+    private final JobRegistry jobRegistry;
+
+    /**
+     * Batch 모니터링 테스트 실행
+     *
+     * - 운영 전 Smoke Test
+     * - Notification 연동 확인
+     */
+    @PostMapping("/batch/monitoring/run")
+    public String runMonitoringBatch() throws Exception {
+
+        Job job = jobRegistry.getJob("batchMonitoringJob");
+
+        JobParameters params = new JobParametersBuilder()
+                .addLocalDateTime("runAt", LocalDateTime.now())
+                .toJobParameters();
+
+        jobLauncher.run(job, params);
+
+        log.info("[API] Batch monitoring job triggered");
+
+        return "Batch monitoring batch started";
+    }
+}
